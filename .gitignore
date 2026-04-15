@@ -1,0 +1,31 @@
+node_modules/
+.next/
+out/
+dist/
+/.vscode/
+.DS_Store
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build artifacts and caches
+/.parcel-cache/
+
+# Exclude heavy editor/babylon scene assets (keep repo small)
+/public/scene/
+/assets/example.scene/
+/public/scene/assets/
+*.babylon
+*.babylonbinarymeshdata
+
+# Media binaries (optional: remove if you need images tracked)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bin
+*.glb
+*.gltf
