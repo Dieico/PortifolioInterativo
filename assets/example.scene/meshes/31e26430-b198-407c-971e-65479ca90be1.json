@@ -1,0 +1,171 @@
+{
+    "meshes": [
+        {
+            "name": "New Capsule Collider",
+            "id": "31e26430-b198-407c-971e-65479ca90be1",
+            "uniqueId": 1776345030298,
+            "type": "Mesh",
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "rotation": [
+                0,
+                0,
+                0
+            ],
+            "scaling": [
+                100,
+                100,
+                100
+            ],
+            "localMatrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "isEnabled": true,
+            "isVisible": false,
+            "infiniteDistance": false,
+            "pickable": true,
+            "receiveShadows": false,
+            "billboardMode": 0,
+            "visibility": 1,
+            "alwaysSelectAsActiveMesh": false,
+            "checkCollisions": false,
+            "ellipsoid": [
+                0.5,
+                1,
+                0.5
+            ],
+            "ellipsoidOffset": [
+                0,
+                0,
+                0
+            ],
+            "doNotSyncBoundingInfo": false,
+            "isBlocker": false,
+            "sideOrientation": 1,
+            "isUnIndexed": false,
+            "geometryUniqueId": 62,
+            "geometryId": "7fe82b21-31d7-4aa7-85a4-fd9058db95b8",
+            "subMeshes": null,
+            "materialUniqueId": 1776373616796,
+            "materialId": "76df1642-ee7f-4ae6-ae05-89db5928b962",
+            "metadata": {
+                "isCollisionMesh": true
+            },
+            "instances": [],
+            "animations": [],
+            "ranges": [],
+            "layerMask": 268435455,
+            "alphaIndex": 1.7976931348623157e+308,
+            "hasVertexAlpha": false,
+            "overlayAlpha": 1,
+            "overlayColor": [
+                0,
+                0,
+                0
+            ],
+            "applyFog": true,
+            "delayLoadingFile": "assets/example.scene/geometries/7fe82b21-31d7-4aa7-85a4-fd9058db95b8.babylonbinarymeshdata",
+            "boundingBoxMaximum": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "boundingBoxMinimum": [
+                -0.5,
+                -0.5,
+                -0.5
+            ],
+            "_binaryInfo": {
+                "positionsAttrDesc": {
+                    "count": 2109,
+                    "stride": 3,
+                    "offset": 0,
+                    "dataType": 1
+                },
+                "normalsAttrDesc": {
+                    "count": 2109,
+                    "stride": 3,
+                    "offset": 8436,
+                    "dataType": 1
+                },
+                "uvsAttrDesc": {
+                    "count": 1406,
+                    "stride": 2,
+                    "offset": 16872,
+                    "dataType": 1
+                },
+                "indicesAttrDesc": {
+                    "count": 3888,
+                    "stride": 1,
+                    "offset": 22496,
+                    "dataType": 0
+                },
+                "subMeshesAttrDesc": {
+                    "count": 1,
+                    "stride": 5,
+                    "offset": 38048,
+                    "dataType": 0
+                }
+            },
+            "positions": null,
+            "normals": null,
+            "uvs": null,
+            "hasUVs": true,
+            "indices": null
+        }
+    ],
+    "transformNodes": [],
+    "cameras": [],
+    "lights": [],
+    "geometries": {
+        "boxes": [],
+        "spheres": [],
+        "cylinders": [],
+        "toruses": [],
+        "grounds": [],
+        "planes": [],
+        "torusKnots": [],
+        "vertexData": []
+    },
+    "metadata": {
+        "isCollisionMesh": true
+    },
+    "basePoseMatrix": [
+        -0.740804596286752,
+        0,
+        0.6717205893229881,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.6717205893229881,
+        0,
+        -0.740804596286752,
+        0,
+        -1.1824300118441284,
+        -11.972793822881506,
+        -1.3040386158839923,
+        1
+    ],
+    "isCollisionMesh": true,
+    "collisionMeshType": "sphere"
+}

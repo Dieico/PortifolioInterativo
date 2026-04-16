@@ -1,0 +1,105 @@
+{
+    "meshes": [
+        {
+            "name": "Sertania.glb",
+            "id": "6570a138-ceea-4bf3-87d6-4f1ce0f64309",
+            "uniqueId": 1776373330285,
+            "type": "Mesh",
+            "position": [
+                319.4696093406051,
+                0.16015410423415233,
+                190.5240078906269
+            ],
+            "rotationQuaternion": [
+                0,
+                0,
+                1,
+                0
+            ],
+            "scaling": [
+                30,
+                -30,
+                30
+            ],
+            "localMatrix": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1
+            ],
+            "isEnabled": true,
+            "isVisible": true,
+            "infiniteDistance": false,
+            "pickable": true,
+            "receiveShadows": true,
+            "billboardMode": 0,
+            "visibility": 1,
+            "alwaysSelectAsActiveMesh": false,
+            "checkCollisions": false,
+            "ellipsoid": [
+                0.5,
+                1,
+                0.5
+            ],
+            "ellipsoidOffset": [
+                0,
+                0,
+                0
+            ],
+            "doNotSyncBoundingInfo": false,
+            "isBlocker": false,
+            "sideOrientation": 1,
+            "isUnIndexed": false,
+            "materialId": "default material",
+            "metadata": {},
+            "instances": [],
+            "animations": [],
+            "ranges": [],
+            "layerMask": 268435455,
+            "alphaIndex": 1.7976931348623157e+308,
+            "hasVertexAlpha": false,
+            "overlayAlpha": 1,
+            "overlayColor": [
+                0,
+                0,
+                0
+            ],
+            "applyFog": true
+        }
+    ],
+    "transformNodes": [],
+    "cameras": [],
+    "lights": [],
+    "materials": [],
+    "metadata": {},
+    "basePoseMatrix": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+    ]
+}
