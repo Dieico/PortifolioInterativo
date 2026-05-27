@@ -4,7 +4,6 @@ import artstationMedievalAssetsImage from '../assets/projects/artstation-medieva
 import artstationMushroomMonkImage from '../assets/projects/artstation-mushroom-monk.jpg'
 import artstationPixelRoomImage from '../assets/projects/artstation-pixel-room.jpg'
 import artstationSertaniaImage from '../assets/projects/artstation-sertania.jpg'
-import diegoLinharesImage from '../assets/projects/diego-linhares.jpg'
 import qgQueenImage from '../assets/projects/qg-queen.jpg'
 
 export type LandmarkKind =
