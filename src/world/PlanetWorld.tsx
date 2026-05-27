@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { projects, type LandmarkKind, type Project } from '../data/projects'
 import { usePortfolioStore, type CameraMode } from '../store/usePortfolioStore'
 
-const PLANET_RADIUS = 4
+const PLANET_RADIUS = 5.76
 const UP = new THREE.Vector3(0, 1, 0)
 const JUMP_FORCE = 2.55
 const JUMP_GRAVITY = 6.4
@@ -102,87 +102,209 @@ function Landmark({ project }: { project: Project }) {
 }
 
 function LandmarkShape({ kind }: { kind: LandmarkKind }) {
-  if (kind === 'home') {
+  if (kind === 'profile') {
     return (
       <group>
-        <mesh position={[0, 0.32, 0]} castShadow>
-          <boxGeometry args={[0.76, 0.62, 0.66]} />
-          <meshStandardMaterial color="#eadbb8" />
+        <mesh position={[0, 0.42, 0]} castShadow>
+          <capsuleGeometry args={[0.18, 0.5, 6, 12]} />
+          <meshStandardMaterial color="#e8c16d" />
         </mesh>
-        <mesh position={[0, 0.76, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-          <coneGeometry args={[0.64, 0.5, 4]} />
-          <meshStandardMaterial color="#d66f58" />
+        <mesh position={[0, 0.88, 0]} castShadow>
+          <sphereGeometry args={[0.22, 16, 16]} />
+          <meshStandardMaterial color="#f0cead" />
         </mesh>
-        <mesh position={[0, 0.26, 0.34]}>
-          <boxGeometry args={[0.16, 0.32, 0.02]} />
-          <meshStandardMaterial color="#496070" />
-        </mesh>
-        <mesh position={[0.3, 0.74, -0.05]}>
-          <cylinderGeometry args={[0.05, 0.05, 0.42, 8]} />
-          <meshStandardMaterial color="#d6bb8d" />
+        <mesh position={[0, 1.03, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+          <torusGeometry args={[0.28, 0.025, 8, 18]} />
+          <meshStandardMaterial color="#69bacc" emissive="#204b65" />
         </mesh>
       </group>
     )
   }
 
-  if (kind === 'telescope') {
+  if (kind === 'sertania') {
     return (
-      <group rotation={[0, 0, -0.18]}>
-        <mesh position={[0, 0.56, 0]} rotation={[0, 0, -0.52]} castShadow>
-          <cylinderGeometry args={[0.12, 0.17, 0.88, 12]} />
-          <meshStandardMaterial color="#e2c680" metalness={0.35} />
+      <group>
+        <mesh position={[0, 0.36, 0]} castShadow>
+          <cylinderGeometry args={[0.32, 0.42, 0.28, 8]} />
+          <meshStandardMaterial color="#b97845" roughness={0.9} />
         </mesh>
-        <mesh position={[-0.1, 0.9, 0]} rotation={[0, 0, -0.52]}>
-          <cylinderGeometry args={[0.19, 0.19, 0.12, 12]} />
-          <meshStandardMaterial color="#253b59" />
+        <mesh position={[0, 0.78, 0]} castShadow>
+          <coneGeometry args={[0.43, 0.72, 5]} />
+          <meshStandardMaterial color="#d9a441" emissive="#4b2b12" />
         </mesh>
-        {[-0.16, 0.16].map((x) => (
-          <mesh key={x} position={[x, 0.22, 0]} rotation={[0, 0, x * 2]}>
-            <cylinderGeometry args={[0.025, 0.025, 0.5, 6]} />
-            <meshStandardMaterial color="#8e6445" />
+        <mesh position={[0.26, 0.42, 0.08]} rotation={[0, 0, -0.4]}>
+          <cylinderGeometry args={[0.025, 0.025, 0.62, 6]} />
+          <meshStandardMaterial color="#6f4b34" />
+        </mesh>
+      </group>
+    )
+  }
+
+  if (kind === 'colorHeroes') {
+    return (
+      <group>
+        {[
+          [-0.18, 0.42, 0, '#ff6b6b'],
+          [0.18, 0.46, 0, '#5cd6a3'],
+          [0, 0.72, 0.06, '#6aa8ff'],
+        ].map(([x, y, z, color]) => (
+          <mesh key={color} position={[x as number, y as number, z as number]} castShadow>
+            <sphereGeometry args={[0.18, 14, 14]} />
+            <meshStandardMaterial color={color as string} emissive={color as string} emissiveIntensity={0.25} />
+          </mesh>
+        ))}
+        <mesh position={[0, 0.2, 0]} castShadow>
+          <boxGeometry args={[0.62, 0.16, 0.42]} />
+          <meshStandardMaterial color="#efd49d" />
+        </mesh>
+      </group>
+    )
+  }
+
+  if (kind === 'mushroomMonk') {
+    return (
+      <group>
+        <mesh position={[0, 0.38, 0]} castShadow>
+          <cylinderGeometry args={[0.16, 0.2, 0.52, 12]} />
+          <meshStandardMaterial color="#f1dfbd" />
+        </mesh>
+        <mesh position={[0, 0.78, 0]} scale={[1.16, 0.56, 1.16]} castShadow>
+          <sphereGeometry args={[0.36, 18, 12]} />
+          <meshStandardMaterial color="#d66f58" />
+        </mesh>
+        <mesh position={[-0.12, 0.86, 0.25]}>
+          <sphereGeometry args={[0.045, 8, 8]} />
+          <meshStandardMaterial color="#fff1ce" />
+        </mesh>
+        <mesh position={[0.13, 0.9, 0.2]}>
+          <sphereGeometry args={[0.055, 8, 8]} />
+          <meshStandardMaterial color="#fff1ce" />
+        </mesh>
+      </group>
+    )
+  }
+
+  if (kind === 'saswirl') {
+    return (
+      <group>
+        <mesh position={[0, 0.55, 0]} castShadow>
+          <torusKnotGeometry args={[0.22, 0.055, 42, 8]} />
+          <meshStandardMaterial color="#8ad0cf" emissive="#1c5260" />
+        </mesh>
+        <mesh position={[0.34, 0.72, 0]} rotation={[0, 0, -0.55]} castShadow>
+          <coneGeometry args={[0.14, 0.36, 16]} />
+          <meshStandardMaterial color="#f0c969" />
+        </mesh>
+        <mesh position={[-0.31, 0.35, 0]} rotation={[0, 0, 0.5]} castShadow>
+          <coneGeometry args={[0.12, 0.32, 16]} />
+          <meshStandardMaterial color="#f0c969" />
+        </mesh>
+      </group>
+    )
+  }
+
+  if (kind === 'qgQueen') {
+    return (
+      <group>
+        <mesh position={[0, 0.42, 0]} castShadow>
+          <boxGeometry args={[0.68, 0.55, 0.46]} />
+          <meshStandardMaterial color="#4f5d7a" />
+        </mesh>
+        <mesh position={[0, 0.82, 0]} castShadow>
+          <boxGeometry args={[0.78, 0.12, 0.54]} />
+          <meshStandardMaterial color="#f0c969" metalness={0.2} />
+        </mesh>
+        {[-0.22, 0, 0.22].map((x) => (
+          <mesh key={x} position={[x, 1.02, 0]} castShadow>
+            <coneGeometry args={[0.1, 0.3, 4]} />
+            <meshStandardMaterial color="#f0c969" />
           </mesh>
         ))}
       </group>
     )
   }
 
-  if (kind === 'tree') {
+  if (kind === 'pixelRoom') {
     return (
       <group>
-        <mesh position={[0, 0.38, 0]} castShadow>
-          <cylinderGeometry args={[0.09, 0.13, 0.7, 8]} />
-          <meshStandardMaterial color="#855942" />
+        <mesh position={[0, 0.34, 0]} castShadow>
+          <boxGeometry args={[0.76, 0.18, 0.54]} />
+          <meshStandardMaterial color="#8e6445" />
         </mesh>
-        <mesh position={[0, 0.96, 0]} castShadow>
-          <sphereGeometry args={[0.43, 10, 10]} />
-          <meshStandardMaterial color="#8fbd82" emissive="#273d31" />
+        <mesh position={[-0.22, 0.58, -0.03]} castShadow>
+          <boxGeometry args={[0.22, 0.32, 0.28]} />
+          <meshStandardMaterial color="#d98778" />
         </mesh>
-        <mesh position={[0.26, 1.02, 0]}>
-          <sphereGeometry args={[0.075, 8, 8]} />
-          <meshStandardMaterial color="#ffd784" emissive="#ffd784" emissiveIntensity={1} />
+        <mesh position={[0.14, 0.56, 0.03]} castShadow>
+          <boxGeometry args={[0.38, 0.24, 0.3]} />
+          <meshStandardMaterial color="#e2c680" />
+        </mesh>
+        <mesh position={[0.33, 0.78, -0.06]} castShadow>
+          <boxGeometry args={[0.12, 0.32, 0.08]} />
+          <meshStandardMaterial color="#69bacc" />
         </mesh>
       </group>
     )
   }
 
-  if (kind === 'rocket') {
+  if (kind === 'cubeForest') {
     return (
-      <group rotation={[0, 0, -0.23]}>
-        <mesh position={[0, 0.54, 0]} castShadow>
-          <capsuleGeometry args={[0.18, 0.56, 6, 10]} />
-          <meshStandardMaterial color="#f1e6ce" />
+      <group>
+        <mesh position={[0, 0.2, 0]} castShadow>
+          <boxGeometry args={[0.74, 0.18, 0.56]} />
+          <meshStandardMaterial color="#496070" />
         </mesh>
-        <mesh position={[0, 0.91, 0]} castShadow>
-          <coneGeometry args={[0.18, 0.32, 10]} />
-          <meshStandardMaterial color="#d66f58" />
+        {[
+          [-0.26, 0.45, -0.08, 0.18],
+          [0.02, 0.58, 0.06, 0.28],
+          [0.28, 0.42, -0.02, 0.16],
+        ].map(([x, y, z, size]) => (
+          <mesh key={`${x}-${z}`} position={[x, y, z]} castShadow>
+            <boxGeometry args={[size, size * 1.9, size]} />
+            <meshStandardMaterial color="#8fbd82" emissive="#273d31" />
+          </mesh>
+        ))}
+        <mesh position={[0.02, 0.96, 0.06]} castShadow>
+          <boxGeometry args={[0.34, 0.22, 0.34]} />
+          <meshStandardMaterial color="#edcf75" />
         </mesh>
-        <mesh position={[0, 0.56, 0.18]}>
-          <sphereGeometry args={[0.08, 10, 10]} />
-          <meshStandardMaterial color="#69bacc" emissive="#204b65" />
+      </group>
+    )
+  }
+
+  if (kind === 'medievalAssets') {
+    return (
+      <group>
+        <mesh position={[0, 0.5, 0]} rotation={[0, 0, -0.34]} castShadow>
+          <boxGeometry args={[0.16, 0.88, 0.08]} />
+          <meshStandardMaterial color="#a6adbb" metalness={0.45} />
         </mesh>
-        <mesh position={[-0.2, 0.3, 0]} rotation={[0, 0, -0.55]}>
-          <coneGeometry args={[0.12, 0.3, 4]} />
-          <meshStandardMaterial color="#d66f58" />
+        <mesh position={[0, 0.92, 0]} rotation={[0, 0, -0.34]} castShadow>
+          <coneGeometry args={[0.2, 0.28, 4]} />
+          <meshStandardMaterial color="#dfe4ec" metalness={0.55} />
+        </mesh>
+        <mesh position={[-0.16, 0.45, 0]} rotation={[0, 0, -0.34]} castShadow>
+          <boxGeometry args={[0.52, 0.07, 0.09]} />
+          <meshStandardMaterial color="#f0c969" />
+        </mesh>
+      </group>
+    )
+  }
+
+  if (kind === 'contact') {
+    return (
+      <group>
+        <mesh position={[0, 0.36, 0]} castShadow>
+          <boxGeometry args={[0.58, 0.38, 0.34]} />
+          <meshStandardMaterial color="#e0a554" />
+        </mesh>
+        <mesh position={[0, 0.6, 0]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.42, 0.42, 0.035]} />
+          <meshStandardMaterial color="#efd49d" />
+        </mesh>
+        <mesh position={[0.31, 0.83, 0]} rotation={[0, 0, 0.18]}>
+          <boxGeometry args={[0.06, 0.44, 0.06]} />
+          <meshStandardMaterial color="#cc6155" />
         </mesh>
       </group>
     )
@@ -223,7 +345,15 @@ function Player() {
   const started = usePortfolioStore((state) => state.started)
   const activeProjectId = usePortfolioStore((state) => state.activeProjectId)
   const cameraMode = usePortfolioStore((state) => state.cameraMode)
+  const virtualMovement = usePortfolioStore((state) => state.virtualMovement)
+  const jumpRequest = usePortfolioStore((state) => state.jumpRequest)
   const setNearbyProject = usePortfolioStore((state) => state.setNearbyProject)
+
+  useEffect(() => {
+    if (jumpRequest > 0) {
+      jumpRequested.current = true
+    }
+  }, [jumpRequest])
 
   useEffect(() => {
     const keyDown = (event: KeyboardEvent) => {
@@ -255,10 +385,12 @@ function Player() {
     const canMove = started && !activeProjectId
     const vertical =
       Number(pressedKeys.current.has('w') || pressedKeys.current.has('arrowup')) -
-      Number(pressedKeys.current.has('s') || pressedKeys.current.has('arrowdown'))
+      Number(pressedKeys.current.has('s') || pressedKeys.current.has('arrowdown')) +
+      virtualMovement.vertical
     const horizontal =
       Number(pressedKeys.current.has('d') || pressedKeys.current.has('arrowright')) -
-      Number(pressedKeys.current.has('a') || pressedKeys.current.has('arrowleft'))
+      Number(pressedKeys.current.has('a') || pressedKeys.current.has('arrowleft')) +
+      virtualMovement.horizontal
     const side = new THREE.Vector3().crossVectors(heading.current, normal.current).normalize()
     const motion = heading.current
       .clone()

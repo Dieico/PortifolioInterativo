@@ -80,6 +80,13 @@ a {
   max-width: 22rem;
 }
 
+.welcome__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
 .primary-button {
   align-items: center;
   background: var(--gold);
@@ -103,7 +110,32 @@ a {
   transform: translateY(-2px);
 }
 
+.secondary-button {
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: rgba(10, 15, 34, 0.45);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  color: #ffe8b1;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  justify-content: center;
+  padding: 0.88rem 1.25rem;
+  text-decoration: none;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.secondary-button:hover {
+  background: rgba(243, 212, 135, 0.12);
+  border-color: rgba(243, 212, 135, 0.4);
+  transform: translateY(-2px);
+}
+
 .primary-button:focus-visible,
+.secondary-button:focus-visible,
 .interaction:focus-visible,
 .close-button:focus-visible {
   outline: 2px solid #fff0bc;
@@ -146,6 +178,43 @@ a {
   position: absolute;
   right: clamp(1rem, 3vw, 2rem);
   top: clamp(1rem, 3vw, 2rem);
+}
+
+.language-picker {
+  backdrop-filter: blur(10px);
+  background: rgba(10, 15, 34, 0.4);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.32rem;
+  pointer-events: auto;
+}
+
+.language-picker button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #bfc7d4;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-width: 2.45rem;
+  padding: 0.48rem 0.58rem;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.language-picker button:hover,
+.language-picker button.is-active {
+  background: rgba(243, 212, 135, 0.14);
+  border-color: rgba(243, 212, 135, 0.24);
+  color: #ffe8b1;
+}
+
+.language-picker button:focus-visible {
+  outline: 2px dashed #93a9d2;
+  outline-offset: 2px;
 }
 
 .camera-picker p {
@@ -191,6 +260,10 @@ a {
   left: clamp(1rem, 3vw, 2rem);
   opacity: 0.82;
   position: absolute;
+}
+
+.touch-controls {
+  display: none;
 }
 
 kbd {
@@ -292,6 +365,17 @@ kbd {
   font-size: 0.94rem;
   line-height: 1.7;
   margin: 0 0 1.4rem;
+}
+
+.project-card__image {
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgba(244, 214, 144, 0.16);
+  border-radius: 0.8rem;
+  display: block;
+  margin: 0 0 1.35rem;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
 }
 
 .project-card__video {
@@ -425,8 +509,76 @@ kbd {
     display: none;
   }
 
-  .modal-backdrop {
+  .touch-controls {
     align-items: flex-end;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: space-between;
+    left: 1rem;
+    pointer-events: none;
+    position: absolute;
+    right: 1rem;
+  }
+
+  .touch-controls button {
+    align-items: center;
+    backdrop-filter: blur(14px);
+    background: rgba(10, 15, 34, 0.56);
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    color: #ffe8b1;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: Arial, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    height: 3rem;
+    justify-content: center;
+    min-width: 3rem;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .touch-controls button:active {
+    background: rgba(243, 212, 135, 0.18);
+    border-color: rgba(243, 212, 135, 0.48);
+  }
+
+  .touch-controls__pad {
+    display: grid;
+    gap: 0.42rem;
+    grid-template-columns: repeat(3, 3rem);
+    grid-template-rows: repeat(2, 3rem);
+    pointer-events: auto;
+  }
+
+  .touch-controls__pad button:first-child {
+    grid-column: 2;
+  }
+
+  .touch-controls__pad button:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .touch-controls__pad button:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .touch-controls__pad button:nth-child(4) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .touch-controls__jump {
+    font-size: 0.84rem;
+    padding: 0 1rem;
+  }
+
+  .modal-backdrop {
+    align-items: center;
     padding: 0.65rem;
   }
 
