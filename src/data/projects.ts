@@ -73,7 +73,7 @@ export const projects: Project[] = [
       'Unity',
       'Godot',
     ],
-    imageUrl: diegoLinharesImage,
+    //imageUrl: diegoLinharesImage,
     imageAlt: 'Página de apresentação do portfólio de Diego Linhares.',
     actionLabel: 'Ver ArtStation',
     actionUrl: 'https://www.artstation.com/dieico',
