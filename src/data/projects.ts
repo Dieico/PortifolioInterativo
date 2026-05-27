@@ -23,8 +23,8 @@ export const projects: Project[] = [
     eyebrow: 'Sobre mim',
     description:
       'I am a professional graduate in Sistemas e Mídias Digitais with extensive experience in media development. My skills encompass areas such as 2D/3D animation, 3D modeling, programming, UI/UX, and image editing. I have knowledge of software such as Blender, Photoshop, Illustrator, and experience in developing 3D assets for games on Unity and Unreal Engine platforms. I am passionate about creating captivating worlds and narratives, and I am constantly seeking to improve my skills. I am available to collaborate on challenging projects and contribute to the success of the team.',
-    //role: '',
-    //technologies: [''],
+    // role: '',
+    // technologies: [''],
     normal: [0, 0.18, 0.984],
   },
   {
@@ -33,7 +33,7 @@ export const projects: Project[] = [
     title: 'Protótipo Sertania',
     eyebrow: 'Experiência digital',
     description:
-      'Um telescópio aponta para seu projeto de destaque. Aqui entram o desafio, a solução criada e os resultados do trabalho.',
+      'Sertânia é um jogo de gerenciamento narrativo ambientado no Nordeste brasileiro, imergindo o jogador na realidade de sobreviventes. Com forte apelo cultural e direção de arte que valoriza a estética do Sertão, o jogo desafia a gestão de recursos e a sobrevivência da comunidade. O projeto visa integrar a identidade cearense aos videogames, oferecendo uma experiência imersiva e autêntica. Reconhecido por seu valor cultural, Sertânia foi contemplado pela Lei Paulo Gustavo e teve seu protótipo exibido na Feira do Conhecimento 2025, em Fortaleza.',
     role: 'Generalist 3D, Art Director',
     technologies: ['Blender', 'Unity', 'Substance Painter'],
     // videoUrl: '/assets/meu-video.mp4',
