@@ -28,7 +28,7 @@ const copy = {
       down: 'Mover para trás',
       left: 'Virar para a esquerda',
       right: 'Virar para a direita',
-      jump: 'Pular',
+      interact: 'Interagir',
     },
     explore: 'Explorar',
     close: 'Fechar',
@@ -68,7 +68,7 @@ const copy = {
       down: 'Move backward',
       left: 'Turn left',
       right: 'Turn right',
-      jump: 'Jump',
+      interact: 'Interact',
     },
     explore: 'Explore',
     close: 'Close',
@@ -104,7 +104,7 @@ const copy = {
       down: string
       left: string
       right: string
-      jump: string
+      interact: string
     }
     explore: string
     close: string
@@ -167,7 +167,6 @@ export function Overlay() {
   const language = usePortfolioStore((state) => state.language)
   const setLanguage = usePortfolioStore((state) => state.setLanguage)
   const setVirtualMovement = usePortfolioStore((state) => state.setVirtualMovement)
-  const requestJump = usePortfolioStore((state) => state.requestJump)
   const t = copy[language]
   const nearbyProject = getLocalizedProject(
     projects.find((project) => project.id === nearbyProjectId),
@@ -263,24 +262,20 @@ export function Overlay() {
                 →
               </button>
             </div>
-            <button className="touch-controls__jump" type="button" onClick={requestJump}>
-              {t.controls.jump}
+            <button
+              className="touch-controls__interact"
+              type="button"
+              disabled={!nearbyProject}
+              onClick={() => {
+                if (nearbyProject) {
+                  openProject(nearbyProject.id)
+                }
+              }}
+            >
+              <kbd>E</kbd> {t.touchControls.interact}
             </button>
           </div>
         </>
-      )}
-
-      {started && nearbyProject && !activeProject && (
-        <button
-          className="interaction"
-          type="button"
-          onClick={() => openProject(nearbyProject.id)}
-        >
-          <kbd>E</kbd>
-          <span>
-            {t.explore} <strong>{nearbyProject.title}</strong>
-          </span>
-        </button>
       )}
 
       {activeProject && (

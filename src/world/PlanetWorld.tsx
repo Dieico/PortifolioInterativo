@@ -1,15 +1,83 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Float, Sparkles, Stars } from '@react-three/drei'
+import { Float, Sparkles, Stars, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { projects, type LandmarkKind, type Project } from '../data/projects'
+import { projects, type Project } from '../data/projects'
 import { usePortfolioStore, type CameraMode } from '../store/usePortfolioStore'
 
 const PLANET_RADIUS = 5.76
+const PLANET_MODEL_URL = `${import.meta.env.BASE_URL}models/planet.glb`
+const PLANET_MODEL_SCALE = 1
+const DEFAULT_PROJECT_MODEL_URL = `${import.meta.env.BASE_URL}models/DefaultProjet.glb`
+const DEFAULT_PROJECT_MODEL_HEIGHT = 0.95
+const projectModelUrlCache = new Map<Project['kind'], string | Promise<string>>()
+const DEFAULT_PROJECT_COLLISION_SETTINGS = {
+  // Raio horizontal do collider em volta do modelo.
+  radius: 0.42,
+  // Altura do collider a partir da superficie do planeta.
+  height: 1,
+  // Troque para true quando quiser visualizar/debugar a colisao.
+  visible: false,
+  // Transparencia usada quando visible estiver true.
+  opacity: 0.18,
+  // Cor do collider quando estiver visivel.
+  color: '#ffcf66',
+}
+const PLANET_MATERIAL_SETTINGS = {
+  // Cor base aplicada por cima da textura do GLB.
+  color: '#ffffff',
+  // Cor de brilho proprio do material. Use preto para desligar.
+  emissive: '#050816',
+  // Intensidade do brilho proprio.
+  emissiveIntensity: 1,
+  // Quanto maior, mais fosco; quanto menor, mais brilhante.
+  roughness: 1,
+  // Quanto maior, mais metalico/reflexivo.
+  metalness: 0,
+  // Intensidade dos reflexos de ambiente, caso exista environment map.
+  envMapIntensity: 0.65,
+  // true deixa as faces mais facetadas/low-poly; false suaviza a luz.
+  flatShading: false,
+} satisfies Pick<
+  THREE.MeshStandardMaterialParameters,
+  | 'color'
+  | 'emissive'
+  | 'emissiveIntensity'
+  | 'roughness'
+  | 'metalness'
+  | 'envMapIntensity'
+  | 'flatShading'
+>
+const DEFAULT_PROJECT_MATERIAL_SETTINGS = {
+  // Cor base aplicada por cima da textura do GLB.
+  color: '#ffffff',
+  // Cor de brilho proprio do material. Use preto para desligar.
+  emissive: '#120b04',
+  // Intensidade do brilho proprio.
+  emissiveIntensity: 0.08,
+  // Quanto maior, mais fosco; quanto menor, mais brilhante.
+  roughness: 0.82,
+  // Quanto maior, mais metalico/reflexivo.
+  metalness: 0,
+  // Intensidade dos reflexos de ambiente, caso exista environment map.
+  envMapIntensity: 0.55,
+  // true deixa as faces mais facetadas/low-poly; false suaviza a luz.
+  flatShading: false,
+} satisfies Pick<
+  THREE.MeshStandardMaterialParameters,
+  | 'color'
+  | 'emissive'
+  | 'emissiveIntensity'
+  | 'roughness'
+  | 'metalness'
+  | 'envMapIntensity'
+  | 'flatShading'
+>
 const UP = new THREE.Vector3(0, 1, 0)
 const JUMP_FORCE = 2.55
 const JUMP_GRAVITY = 6.4
+const PLAYER_COLLISION_RADIUS = 0.17
 
 const cameraPresets: Record<
   CameraMode,
@@ -52,6 +120,82 @@ function normalFrom(project: Project) {
   return new THREE.Vector3(...project.normal).normalize()
 }
 
+function projectModelCandidates(kind: Project['kind']) {
+  const capitalizedKind = `${kind.charAt(0).toUpperCase()}${kind.slice(1)}`
+
+  return [
+    `${import.meta.env.BASE_URL}models/${kind}.glb`,
+    `${import.meta.env.BASE_URL}models/${capitalizedKind}.glb`,
+  ]
+}
+
+async function resolveProjectModelUrl(kind: Project['kind']) {
+  const cached = projectModelUrlCache.get(kind)
+  if (typeof cached === 'string') return cached
+  if (cached) return cached
+
+  const promise = (async () => {
+    for (const modelUrl of projectModelCandidates(kind)) {
+      try {
+        const response = await fetch(modelUrl, { method: 'HEAD' })
+        const contentType = response.headers.get('content-type') ?? ''
+
+        if (response.ok && !contentType.includes('text/html')) {
+          return modelUrl
+        }
+      } catch {
+        // Fall back to the default model when a project-specific GLB is missing.
+      }
+    }
+
+    return DEFAULT_PROJECT_MODEL_URL
+  })()
+
+  projectModelUrlCache.set(kind, promise)
+  promise.then((modelUrl) => projectModelUrlCache.set(kind, modelUrl))
+
+  return promise
+}
+
+function useProjectModelUrl(kind: Project['kind']) {
+  const [modelUrl, setModelUrl] = useState(() => {
+    const cached = projectModelUrlCache.get(kind)
+    return typeof cached === 'string' ? cached : DEFAULT_PROJECT_MODEL_URL
+  })
+
+  useEffect(() => {
+    let isActive = true
+
+    resolveProjectModelUrl(kind).then((resolvedModelUrl) => {
+      if (isActive) {
+        setModelUrl(resolvedModelUrl)
+      }
+    })
+
+    return () => {
+      isActive = false
+    }
+  }, [kind])
+
+  return modelUrl
+}
+
+function hitsProjectCollision(nextNormal: THREE.Vector3, jumpHeight: number) {
+  if (jumpHeight > DEFAULT_PROJECT_COLLISION_SETTINGS.height) {
+    return false
+  }
+
+  const collisionRadius =
+    DEFAULT_PROJECT_COLLISION_SETTINGS.radius + PLAYER_COLLISION_RADIUS
+
+  return projects.some((project) => {
+    const projectNormal = normalFrom(project)
+    const surfaceDistance = nextNormal.distanceTo(projectNormal) * PLANET_RADIUS
+
+    return surfaceDistance < collisionRadius
+  })
+}
+
 function SurfaceGroup({
   normal,
   altitude = 0,
@@ -87,7 +231,7 @@ function Landmark({ project }: { project: Project }) {
   return (
     <SurfaceGroup normal={normal} altitude={0.03}>
       <group scale={isHighlighted ? 1.06 : 1}>
-        <LandmarkShape kind={project.kind} />
+        <LandmarkShape project={project} />
         {isHighlighted && (
           <pointLight
             position={[0, 1.1, 0]}
@@ -101,234 +245,112 @@ function Landmark({ project }: { project: Project }) {
   )
 }
 
-function LandmarkShape({ kind }: { kind: LandmarkKind }) {
-  if (kind === 'profile') {
-    return (
-      <group>
-        <mesh position={[0, 0.42, 0]} castShadow>
-          <capsuleGeometry args={[0.18, 0.5, 6, 12]} />
-          <meshStandardMaterial color="#e8c16d" />
-        </mesh>
-        <mesh position={[0, 0.88, 0]} castShadow>
-          <sphereGeometry args={[0.22, 16, 16]} />
-          <meshStandardMaterial color="#f0cead" />
-        </mesh>
-        <mesh position={[0, 1.03, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-          <torusGeometry args={[0.28, 0.025, 8, 18]} />
-          <meshStandardMaterial color="#69bacc" emissive="#204b65" />
-        </mesh>
-      </group>
-    )
-  }
+function DefaultProjectModel({ modelUrl }: { modelUrl: string }) {
+  const { scene } = useGLTF(modelUrl)
+  const model = useMemo(() => scene.clone(true), [scene])
+  const { offset, scale } = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(model)
+    const size = box.getSize(new THREE.Vector3())
+    const center = box.getCenter(new THREE.Vector3())
+    const scale = size.y > 0 ? DEFAULT_PROJECT_MODEL_HEIGHT / size.y : 1
+    const offset = new THREE.Vector3(-center.x, -box.min.y, -center.z)
 
-  if (kind === 'sertania') {
-    return (
-      <group>
-        <mesh position={[0, 0.36, 0]} castShadow>
-          <cylinderGeometry args={[0.32, 0.42, 0.28, 8]} />
-          <meshStandardMaterial color="#b97845" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.78, 0]} castShadow>
-          <coneGeometry args={[0.43, 0.72, 5]} />
-          <meshStandardMaterial color="#d9a441" emissive="#4b2b12" />
-        </mesh>
-        <mesh position={[0.26, 0.42, 0.08]} rotation={[0, 0, -0.4]}>
-          <cylinderGeometry args={[0.025, 0.025, 0.62, 6]} />
-          <meshStandardMaterial color="#6f4b34" />
-        </mesh>
-      </group>
-    )
-  }
+    return { offset, scale }
+  }, [model])
 
-  if (kind === 'colorHeroes') {
-    return (
-      <group>
-        {[
-          [-0.18, 0.42, 0, '#ff6b6b'],
-          [0.18, 0.46, 0, '#5cd6a3'],
-          [0, 0.72, 0.06, '#6aa8ff'],
-        ].map(([x, y, z, color]) => (
-          <mesh key={color} position={[x as number, y as number, z as number]} castShadow>
-            <sphereGeometry args={[0.18, 14, 14]} />
-            <meshStandardMaterial color={color as string} emissive={color as string} emissiveIntensity={0.25} />
-          </mesh>
-        ))}
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <boxGeometry args={[0.62, 0.16, 0.42]} />
-          <meshStandardMaterial color="#efd49d" />
-        </mesh>
-      </group>
-    )
-  }
+  useEffect(() => {
+    const createdMaterials: THREE.Material[] = []
 
-  if (kind === 'mushroomMonk') {
-    return (
-      <group>
-        <mesh position={[0, 0.38, 0]} castShadow>
-          <cylinderGeometry args={[0.16, 0.2, 0.52, 12]} />
-          <meshStandardMaterial color="#f1dfbd" />
-        </mesh>
-        <mesh position={[0, 0.78, 0]} scale={[1.16, 0.56, 1.16]} castShadow>
-          <sphereGeometry args={[0.36, 18, 12]} />
-          <meshStandardMaterial color="#d66f58" />
-        </mesh>
-        <mesh position={[-0.12, 0.86, 0.25]}>
-          <sphereGeometry args={[0.045, 8, 8]} />
-          <meshStandardMaterial color="#fff1ce" />
-        </mesh>
-        <mesh position={[0.13, 0.9, 0.2]}>
-          <sphereGeometry args={[0.055, 8, 8]} />
-          <meshStandardMaterial color="#fff1ce" />
-        </mesh>
-      </group>
-    )
-  }
+    const configureMaterial = (source: THREE.Material) => {
+      const material = source.clone()
+      material.side = THREE.FrontSide
+      material.transparent = false
+      material.opacity = 1
+      material.depthTest = true
+      material.depthWrite = true
 
-  if (kind === 'saswirl') {
-    return (
-      <group>
-        <mesh position={[0, 0.55, 0]} castShadow>
-          <torusKnotGeometry args={[0.22, 0.055, 42, 8]} />
-          <meshStandardMaterial color="#8ad0cf" emissive="#1c5260" />
-        </mesh>
-        <mesh position={[0.34, 0.72, 0]} rotation={[0, 0, -0.55]} castShadow>
-          <coneGeometry args={[0.14, 0.36, 16]} />
-          <meshStandardMaterial color="#f0c969" />
-        </mesh>
-        <mesh position={[-0.31, 0.35, 0]} rotation={[0, 0, 0.5]} castShadow>
-          <coneGeometry args={[0.12, 0.32, 16]} />
-          <meshStandardMaterial color="#f0c969" />
-        </mesh>
-      </group>
-    )
-  }
+      if (material instanceof THREE.MeshStandardMaterial) {
+        material.color.set(DEFAULT_PROJECT_MATERIAL_SETTINGS.color)
+        material.emissive.set(DEFAULT_PROJECT_MATERIAL_SETTINGS.emissive)
+        material.emissiveIntensity =
+          DEFAULT_PROJECT_MATERIAL_SETTINGS.emissiveIntensity
+        material.roughness = DEFAULT_PROJECT_MATERIAL_SETTINGS.roughness
+        material.metalness = DEFAULT_PROJECT_MATERIAL_SETTINGS.metalness
+        material.envMapIntensity =
+          DEFAULT_PROJECT_MATERIAL_SETTINGS.envMapIntensity
+        material.flatShading = DEFAULT_PROJECT_MATERIAL_SETTINGS.flatShading
+      }
 
-  if (kind === 'qgQueen') {
-    return (
-      <group>
-        <mesh position={[0, 0.42, 0]} castShadow>
-          <boxGeometry args={[0.68, 0.55, 0.46]} />
-          <meshStandardMaterial color="#4f5d7a" />
-        </mesh>
-        <mesh position={[0, 0.82, 0]} castShadow>
-          <boxGeometry args={[0.78, 0.12, 0.54]} />
-          <meshStandardMaterial color="#f0c969" metalness={0.2} />
-        </mesh>
-        {[-0.22, 0, 0.22].map((x) => (
-          <mesh key={x} position={[x, 1.02, 0]} castShadow>
-            <coneGeometry args={[0.1, 0.3, 4]} />
-            <meshStandardMaterial color="#f0c969" />
-          </mesh>
-        ))}
-      </group>
-    )
-  }
+      material.needsUpdate = true
+      createdMaterials.push(material)
 
-  if (kind === 'pixelRoom') {
-    return (
-      <group>
-        <mesh position={[0, 0.34, 0]} castShadow>
-          <boxGeometry args={[0.76, 0.18, 0.54]} />
-          <meshStandardMaterial color="#8e6445" />
-        </mesh>
-        <mesh position={[-0.22, 0.58, -0.03]} castShadow>
-          <boxGeometry args={[0.22, 0.32, 0.28]} />
-          <meshStandardMaterial color="#d98778" />
-        </mesh>
-        <mesh position={[0.14, 0.56, 0.03]} castShadow>
-          <boxGeometry args={[0.38, 0.24, 0.3]} />
-          <meshStandardMaterial color="#e2c680" />
-        </mesh>
-        <mesh position={[0.33, 0.78, -0.06]} castShadow>
-          <boxGeometry args={[0.12, 0.32, 0.08]} />
-          <meshStandardMaterial color="#69bacc" />
-        </mesh>
-      </group>
-    )
-  }
+      return material
+    }
 
-  if (kind === 'cubeForest') {
-    return (
-      <group>
-        <mesh position={[0, 0.2, 0]} castShadow>
-          <boxGeometry args={[0.74, 0.18, 0.56]} />
-          <meshStandardMaterial color="#496070" />
-        </mesh>
-        {[
-          [-0.26, 0.45, -0.08, 0.18],
-          [0.02, 0.58, 0.06, 0.28],
-          [0.28, 0.42, -0.02, 0.16],
-        ].map(([x, y, z, size]) => (
-          <mesh key={`${x}-${z}`} position={[x, y, z]} castShadow>
-            <boxGeometry args={[size, size * 1.9, size]} />
-            <meshStandardMaterial color="#8fbd82" emissive="#273d31" />
-          </mesh>
-        ))}
-        <mesh position={[0.02, 0.96, 0.06]} castShadow>
-          <boxGeometry args={[0.34, 0.22, 0.34]} />
-          <meshStandardMaterial color="#edcf75" />
-        </mesh>
-      </group>
-    )
-  }
+    model.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+        child.material = Array.isArray(child.material)
+          ? child.material.map(configureMaterial)
+          : configureMaterial(child.material)
+      }
+    })
 
-  if (kind === 'medievalAssets') {
-    return (
-      <group>
-        <mesh position={[0, 0.5, 0]} rotation={[0, 0, -0.34]} castShadow>
-          <boxGeometry args={[0.16, 0.88, 0.08]} />
-          <meshStandardMaterial color="#a6adbb" metalness={0.45} />
-        </mesh>
-        <mesh position={[0, 0.92, 0]} rotation={[0, 0, -0.34]} castShadow>
-          <coneGeometry args={[0.2, 0.28, 4]} />
-          <meshStandardMaterial color="#dfe4ec" metalness={0.55} />
-        </mesh>
-        <mesh position={[-0.16, 0.45, 0]} rotation={[0, 0, -0.34]} castShadow>
-          <boxGeometry args={[0.52, 0.07, 0.09]} />
-          <meshStandardMaterial color="#f0c969" />
-        </mesh>
-      </group>
-    )
-  }
-
-  if (kind === 'contact') {
-    return (
-      <group>
-        <mesh position={[0, 0.36, 0]} castShadow>
-          <boxGeometry args={[0.58, 0.38, 0.34]} />
-          <meshStandardMaterial color="#e0a554" />
-        </mesh>
-        <mesh position={[0, 0.6, 0]} rotation={[0, 0, Math.PI / 4]}>
-          <boxGeometry args={[0.42, 0.42, 0.035]} />
-          <meshStandardMaterial color="#efd49d" />
-        </mesh>
-        <mesh position={[0.31, 0.83, 0]} rotation={[0, 0, 0.18]}>
-          <boxGeometry args={[0.06, 0.44, 0.06]} />
-          <meshStandardMaterial color="#cc6155" />
-        </mesh>
-      </group>
-    )
-  }
+    return () => {
+      createdMaterials.forEach((material) => material.dispose())
+    }
+  }, [model])
 
   return (
-    <group>
-      <mesh position={[0, 0.36, 0]} castShadow>
-        <boxGeometry args={[0.46, 0.4, 0.34]} />
-        <meshStandardMaterial color="#e0a554" />
-      </mesh>
-      <mesh position={[0, 0.61, 0]}>
-        <boxGeometry args={[0.5, 0.08, 0.38]} />
-        <meshStandardMaterial color="#efd49d" />
-      </mesh>
-      <mesh position={[0, 0.83, 0]} rotation={[0, 0, 0.18]}>
-        <boxGeometry args={[0.06, 0.42, 0.06]} />
-        <meshStandardMaterial color="#cc6155" />
-      </mesh>
-      <mesh position={[0.13, 0.95, 0]}>
-        <boxGeometry args={[0.22, 0.12, 0.04]} />
-        <meshStandardMaterial color="#cc6155" />
-      </mesh>
+    <group scale={scale}>
+      <primitive object={model} position={offset} />
     </group>
+  )
+}
+
+function ProjectCollisionMesh({ project }: { project: Project }) {
+  const materialOpacity = DEFAULT_PROJECT_COLLISION_SETTINGS.visible
+    ? DEFAULT_PROJECT_COLLISION_SETTINGS.opacity
+    : 0
+
+  return (
+    <mesh
+      name={`collision-${project.id}`}
+      position={[0, DEFAULT_PROJECT_COLLISION_SETTINGS.height / 2, 0]}
+      userData={{
+        collision: 'project',
+        projectId: project.id,
+        projectKind: project.kind,
+      }}
+    >
+      <cylinderGeometry
+        args={[
+          DEFAULT_PROJECT_COLLISION_SETTINGS.radius,
+          DEFAULT_PROJECT_COLLISION_SETTINGS.radius,
+          DEFAULT_PROJECT_COLLISION_SETTINGS.height,
+          16,
+        ]}
+      />
+      <meshBasicMaterial
+        color={DEFAULT_PROJECT_COLLISION_SETTINGS.color}
+        transparent
+        opacity={materialOpacity}
+        depthWrite={false}
+        wireframe={DEFAULT_PROJECT_COLLISION_SETTINGS.visible}
+      />
+    </mesh>
+  )
+}
+
+function LandmarkShape({ project }: { project: Project }) {
+  const modelUrl = useProjectModelUrl(project.kind)
+
+  return (
+    <>
+      <DefaultProjectModel modelUrl={modelUrl} />
+      <ProjectCollisionMesh project={project} />
+    </>
   )
 }
 
@@ -419,7 +441,15 @@ function Player() {
     if (canMove && motion.lengthSq() > 0) {
       const speed = pressedKeys.current.has('shift') ? 0.86 : 0.57
       motion.normalize()
-      normal.current.addScaledVector(motion, speed * delta).normalize()
+      const nextNormal = normal.current
+        .clone()
+        .addScaledVector(motion, speed * delta)
+        .normalize()
+
+      if (!hitsProjectCollision(nextNormal, jumpHeight.current)) {
+        normal.current.copy(nextNormal)
+      }
+
       heading.current.projectOnPlane(normal.current).normalize()
 
       if (body.current) {
@@ -534,6 +564,69 @@ function PlanetDecor() {
   )
 }
 
+function PlanetModel() {
+  const { scene } = useGLTF(PLANET_MODEL_URL)
+  const model = useMemo(() => scene.clone(true), [scene])
+  const { center, scale } = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(model)
+    const size = box.getSize(new THREE.Vector3())
+    const center = box.getCenter(new THREE.Vector3()).multiplyScalar(-1)
+    const largestDimension = Math.max(size.x, size.y, size.z)
+    const scale =
+      largestDimension > 0 ? (PLANET_RADIUS * 2) / largestDimension : 1
+
+    return { center, scale }
+  }, [model])
+
+  useEffect(() => {
+    const createdMaterials: THREE.Material[] = []
+
+    const configureMaterial = (source: THREE.Material) => {
+      const material = source.clone()
+      material.side = THREE.FrontSide
+      material.transparent = false
+      material.opacity = 1
+      material.depthTest = true
+      material.depthWrite = true
+
+      if (material instanceof THREE.MeshStandardMaterial) {
+        material.color.set(PLANET_MATERIAL_SETTINGS.color)
+        material.emissive.set(PLANET_MATERIAL_SETTINGS.emissive)
+        material.emissiveIntensity = PLANET_MATERIAL_SETTINGS.emissiveIntensity
+        material.roughness = PLANET_MATERIAL_SETTINGS.roughness
+        material.metalness = PLANET_MATERIAL_SETTINGS.metalness
+        material.envMapIntensity = PLANET_MATERIAL_SETTINGS.envMapIntensity
+        material.flatShading = PLANET_MATERIAL_SETTINGS.flatShading
+      }
+
+      material.needsUpdate = true
+      createdMaterials.push(material)
+
+      return material
+    }
+
+    model.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true
+        child.receiveShadow = true
+        child.material = Array.isArray(child.material)
+          ? child.material.map(configureMaterial)
+          : configureMaterial(child.material)
+      }
+    })
+
+    return () => {
+      createdMaterials.forEach((material) => material.dispose())
+    }
+  }, [model])
+
+  return (
+    <group scale={PLANET_MODEL_SCALE * scale}>
+      <primitive object={model} position={center} />
+    </group>
+  )
+}
+
 export function PlanetWorld() {
   return (
     <>
@@ -552,14 +645,7 @@ export function PlanetWorld() {
       <Sparkles count={35} scale={20} size={1.7} speed={0.15} color="#ffd77b" />
       <Float speed={0.28} rotationIntensity={0.06} floatIntensity={0.13}>
         <group>
-          <mesh receiveShadow castShadow>
-            <sphereGeometry args={[PLANET_RADIUS, 48, 48]} />
-            <meshStandardMaterial color="#7ba47f" roughness={0.96} />
-          </mesh>
-          <mesh scale={1.004}>
-            <sphereGeometry args={[PLANET_RADIUS, 32, 32]} />
-            <meshBasicMaterial color="#729276" transparent opacity={0.18} wireframe />
-          </mesh>
+          <PlanetModel />
           <PlanetDecor />
           {projects.map((project) => (
             <Landmark key={project.id} project={project} />

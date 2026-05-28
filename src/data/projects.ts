@@ -76,7 +76,7 @@ export const projects: Project[] = [
     imageAlt: 'Página de apresentação do portfólio de Diego Linhares.',
     actionLabel: 'Ver ArtStation',
     actionUrl: 'https://www.artstation.com/dieico',
-    normal: [0, 0.18, 0.984],
+    normal: [0, 1, 0],
     translations: {
       en: {
         eyebrow: '3D Generalist & Producer',
